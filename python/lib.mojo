@@ -14,6 +14,4 @@ fn PyInit_marrow() -> PythonObject:
         add_primitive(m)
         return m.finalize()
     except e:
-        return abort[PythonObject](
-            String("error creating Python Mojo module:", e)
-        )
+        abort(String("error creating Python Mojo module:", e))
