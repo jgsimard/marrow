@@ -1,5 +1,5 @@
 from memory import (
-    LegacyUnsafePointer,
+    UnsafePointer,
     memset_zero,
     memcpy,
     ArcPointer,
@@ -28,14 +28,14 @@ comptime simd_widths = (simd_width, simd_width // 2, 1)
 
 
 struct Buffer(Movable):
-    var ptr: LegacyUnsafePointer[UInt8]
+    var ptr: UnsafePointer[UInt8, MutAnyOrigin]
     var size: Int
     var owns: Bool
     var offset: Int
 
     fn __init__(
         out self,
-        ptr: LegacyUnsafePointer[UInt8],
+        ptr: UnsafePointer[UInt8, MutAnyOrigin],
         size: Int,
         owns: Bool = True,
         offset: Int = 0,
@@ -88,7 +88,7 @@ struct Buffer(Movable):
     fn view[
         I: Intable, //
     ](
-        ptr: LegacyUnsafePointer[NoneType],
+        ptr: UnsafePointer[NoneType],
         length: I,
         dtype: DType = DType.uint8,
     ) raises -> Buffer:
@@ -96,7 +96,7 @@ struct Buffer(Movable):
         return Buffer(ptr.bitcast[UInt8](), size, owns=False)
 
     @always_inline
-    fn get_ptr_at(self, index: Int) -> LegacyUnsafePointer[UInt8]:
+    fn get_ptr_at(self, index: Int) -> UnsafePointer[UInt8]:
         return (self.ptr + index).bitcast[UInt8]()
 
     fn grow[I: Intable, //, T: DType = DType.uint8](mut self, target_length: I):
