@@ -107,7 +107,9 @@ struct CArrowSchema(Copyable, Representable, Stringable, Writable):
             # constrained[False, "Unknown dtype"]()
 
         return CArrowSchema(
-            format=UnsafePointer[c_char, MutAnyOrigin](fmt.unsafe_cstr_ptr()),
+            format=UnsafePointer[c_char, MutAnyOrigin](
+                fmt.as_c_string_slice().unsafe_ptr()
+            ),
             name=UnsafePointer[c_char, MutAnyOrigin](),
             metadata=UnsafePointer[c_char, MutAnyOrigin](),
             flags=0,
@@ -127,7 +129,7 @@ struct CArrowSchema(Copyable, Representable, Stringable, Writable):
         return CArrowSchema(
             format=UnsafePointer[c_char, MutAnyOrigin](),
             name=UnsafePointer[c_char, MutAnyOrigin](
-                field_name.unsafe_cstr_ptr()
+                field_name.as_c_string_slice().unsafe_ptr()
             ),
             metadata=UnsafePointer[c_char, MutAnyOrigin](),
             flags=flags,
