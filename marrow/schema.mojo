@@ -8,7 +8,7 @@ from collections import Dict
 from collections.string import StringSlice
 
 
-struct Schema(Copyable, Movable):
+struct Schema(Copyable):
     var fields: List[Field]
     var metadata: Dict[String, String]
 

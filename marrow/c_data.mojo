@@ -20,7 +20,7 @@ comptime CArrayReleaseFunction = fn (schema: UnsafePointer[UInt64]) -> NoneType
 
 
 @fieldwise_init
-struct CArrowSchema(Copyable, Movable, Representable, Stringable, Writable):
+struct CArrowSchema(Copyable, Representable, Stringable, Writable):
     var format: UnsafePointer[c_char, MutAnyOrigin]
     var name: UnsafePointer[c_char, MutAnyOrigin]
     var metadata: UnsafePointer[c_char, MutAnyOrigin]
@@ -107,7 +107,7 @@ struct CArrowSchema(Copyable, Movable, Representable, Stringable, Writable):
             # constrained[False, "Unknown dtype"]()
 
         return CArrowSchema(
-            format=fmt.unsafe_cstr_ptr(),
+            format=UnsafePointer[c_char, MutAnyOrigin](fmt.unsafe_cstr_ptr()),
             name=UnsafePointer[c_char, MutAnyOrigin](),
             metadata=UnsafePointer[c_char, MutAnyOrigin](),
             flags=0,
@@ -125,9 +125,11 @@ struct CArrowSchema(Copyable, Movable, Representable, Stringable, Writable):
 
         var field_name = field.name
         return CArrowSchema(
-            format="".unsafe_cstr_ptr(),
-            name=field_name.unsafe_cstr_ptr(),
-            metadata="".unsafe_cstr_ptr(),
+            format=UnsafePointer[c_char, MutAnyOrigin](),
+            name=UnsafePointer[c_char, MutAnyOrigin](
+                field_name.unsafe_cstr_ptr()
+            ),
+            metadata=UnsafePointer[c_char, MutAnyOrigin](),
             flags=flags,
             n_children=0,
             children=UnsafePointer[
@@ -200,11 +202,14 @@ struct CArrowSchema(Copyable, Movable, Representable, Stringable, Writable):
             writer: The object to write to.
         """
         var metadata = 'metadata="{}", '.format(
-            self.metadata[]
+            StringSlice(unsafe_from_utf8_ptr=self.metadata)
         ) if self.metadata else ""
         var str = (
             'CArrowSchema(name="{}", format="{}", {}n_children={})'.format(
-                self.name[], self.format[], metadata, self.n_children
+                StringSlice(unsafe_from_utf8_ptr=self.name),
+                StringSlice(unsafe_from_utf8_ptr=self.format),
+                metadata,
+                self.n_children,
             )
         )
 
@@ -218,7 +223,7 @@ struct CArrowSchema(Copyable, Movable, Representable, Stringable, Writable):
 
 
 @fieldwise_init
-struct CArrowArray(Copyable, Movable):
+struct CArrowArray(Copyable):
     var length: Int64
     var null_count: Int64
     var offset: Int64
@@ -308,7 +313,7 @@ comptime AnyFunction = fn (UnsafePointer[NoneType]) -> UInt
 
 @fieldwise_init
 @register_passable("trivial")
-struct CArrowArrayStreamOpaque(Copyable, Movable):
+struct CArrowArrayStreamOpaque(Copyable):
     # Callbacks providing stream functionality
     var get_schema: AnyFunction
     var get_next: AnyFunction
@@ -321,20 +326,20 @@ struct CArrowArrayStreamOpaque(Copyable, Movable):
     var private_data: UnsafePointer[NoneType, MutAnyOrigin]
 
 
-comptime get_schema_fn = fn (
-    stream: UnsafePointer[CArrowArrayStreamOpaque],
-    out_schema: UnsafePointer[CArrowSchema],
+comptime get_schema_fn[o: Origin] = fn (
+    stream: UnsafePointer[CArrowArrayStreamOpaque, o],
+    out_schema: UnsafePointer[CArrowSchema, o],
 ) -> UInt
 
-comptime get_next_fn = fn (
-    stream: UnsafePointer[CArrowArrayStreamOpaque],
-    out_array: UnsafePointer[CArrowArray],
+comptime get_next_fn[o: Origin] = fn (
+    stream: UnsafePointer[CArrowArrayStreamOpaque, o],
+    out_array: UnsafePointer[CArrowArray, o],
 ) -> UInt
 
 
 @fieldwise_init
 @register_passable("trivial")
-struct CArrowArrayStream(Copyable, Movable):
+struct CArrowArrayStream(Copyable):
     # Callbacks providing stream functionality
     var get_schema: get_schema_fn
     var get_next: fn (
@@ -353,7 +358,7 @@ struct CArrowArrayStream(Copyable, Movable):
 
 
 @fieldwise_init
-struct ArrowArrayStream(Copyable, Movable):
+struct ArrowArrayStream(Copyable):
     """Provide an fiendly interface to the C Arrow Array Stream."""
 
     var c_arrow_array_stream: UnsafePointer[
@@ -372,7 +377,7 @@ struct ArrowArrayStream(Copyable, Movable):
         if not ptr:
             raise Error("Failed to get the arrow array stream pointer")
 
-        var alt = UnsafePointer(ptr.bitcast[CArrowArrayStreamOpaque]())
+        var alt = ptr.bitcast[CArrowArrayStreamOpaque]()
         return ArrowArrayStream(alt)
 
     fn c_schema(self) raises -> CArrowSchema:
@@ -380,7 +385,7 @@ struct ArrowArrayStream(Copyable, Movable):
         var schema = alloc[CArrowSchema](1)
         var function = UnsafePointer(
             to=self.c_arrow_array_stream[].get_schema
-        ).bitcast[get_schema_fn]()[]
+        ).bitcast[get_schema_fn[MutAnyOrigin]]()[]
         var err = function(self.c_arrow_array_stream, schema)
         if err != 0:
             raise Error("Failed to get schema " + String(err))
@@ -393,7 +398,7 @@ struct ArrowArrayStream(Copyable, Movable):
         var arrow_array = alloc[CArrowArray](1)
         var function = UnsafePointer(
             to=self.c_arrow_array_stream[].get_next
-        ).bitcast[get_next_fn]()[]
+        ).bitcast[get_next_fn[MutAnyOrigin]]()[]
         var err = function(self.c_arrow_array_stream, arrow_array)
         if err != 0:
             raise Error("Failed to get next arrow array " + String(err))

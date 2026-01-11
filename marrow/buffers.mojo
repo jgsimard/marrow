@@ -88,7 +88,7 @@ struct Buffer(Movable):
     fn view[
         I: Intable, //
     ](
-        ptr: UnsafePointer[NoneType],
+        ptr: UnsafePointer[NoneType, MutAnyOrigin],
         length: I,
         dtype: DType = DType.uint8,
     ) raises -> Buffer:

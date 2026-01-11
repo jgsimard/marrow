@@ -144,7 +144,7 @@ comptime LIST_VIEW = 41
 comptime LARGE_LIST_VIEW = 42
 
 
-struct Field(Copyable, Equatable, Movable, Representable, Stringable, Writable):
+struct Field(Copyable, Equatable, Representable, Stringable, Writable):
     var name: String
     var dtype: DataType
     var nullable: Bool
@@ -196,7 +196,7 @@ struct Field(Copyable, Equatable, Movable, Representable, Stringable, Writable):
 
 
 struct DataType(
-    Copyable, Equatable, Movable, Representable, Stringable, Writable
+    Copyable, Equatable, Representable, Stringable, Writable
 ):
     var code: UInt8
     var native: DType
