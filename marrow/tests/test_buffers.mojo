@@ -4,7 +4,7 @@ from marrow.test_fixtures.arrays import assert_bitmap_set
 from marrow.buffers import *
 
 
-def is_aligned[T: AnyType](ptr: LegacyUnsafePointer[T], alignment: Int) -> Bool:
+def is_aligned[T: AnyType](ptr: UnsafePointer[T, MutAnyOrigin], alignment: Int) -> Bool:
     return (Int(ptr) % alignment) == 0
 
 
@@ -145,11 +145,11 @@ def test_unsafe_range_set():
         _reset(bitmap)
         var start_bit = to_test[pos]
         bitmap.unsafe_range_set(start_bit, 1, True)
-        assert_bitmap_set(bitmap, List(start_bit), "range  1")
+        assert_bitmap_set(bitmap, [start_bit], "range  1")
         if to_test[pos] < bitmap.length() - 1:
             _reset(bitmap)
             bitmap.unsafe_range_set(start_bit, 2, True)
-            assert_bitmap_set(bitmap, List(start_bit, start_bit + 1), "range 2")
+            assert_bitmap_set(bitmap, [start_bit, start_bit + 1], "range 2")
 
 
 def test_partial_byte_set():
