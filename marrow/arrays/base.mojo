@@ -7,9 +7,7 @@ trait Array(Movable, Representable, Sized, Stringable, Writable):
         """Construct an ArrayData by consuming self."""
         ...
 
-    fn as_data[
-        self_origin: ImmutOrigin
-    ](ref [self_origin]self) -> LegacyUnsafePointer[ArrayData, mut=False]:
+    fn as_data(self) -> UnsafePointer[ArrayData, ImmutAnyOrigin]:
         """Return a read only reference to the ArrayData wrapped by self.
 
         Note that ideally the output type would be `ref [self_origin] ArrayData` but this is not supported yet.
@@ -19,7 +17,7 @@ trait Array(Movable, Representable, Sized, Stringable, Writable):
 
 
 @fieldwise_init
-struct ArrayData(Copyable, Movable, Representable, Stringable, Writable):
+struct ArrayData(Copyable, Representable, Stringable, Writable):
     """ArrayData is the lower level abstraction directly usable by the library consumer.
 
     Equivalent with https://github.com/apache/arrow/blob/7184439dea96cd285e6de00e07c5114e4919a465/cpp/src/arrow/array/data.h#L62-L84.
@@ -44,8 +42,8 @@ struct ArrayData(Copyable, Movable, Representable, Stringable, Writable):
             dtype=materialize[dtype](),
             length=length,
             bitmap=ArcPointer(bitmap^),
-            buffers=List(ArcPointer(buffer^)),
-            children=List[ArcPointer[ArrayData]](),
+            buffers=[ArcPointer(buffer^)],
+            children=[],
             offset=0,
         )
 

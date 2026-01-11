@@ -94,8 +94,8 @@ struct PrimitiveArray[T: DataType](Array):
             dtype=materialize[Self.T](),
             length=0,
             bitmap=bitmap,
-            buffers=List(buffer),
-            children=List[ArcPointer[ArrayData]](),
+            buffers=[buffer],
+            children=[],
             offset=self.offset,
         )
 
@@ -113,11 +113,9 @@ struct PrimitiveArray[T: DataType](Array):
     fn take_data(deinit self) -> ArrayData:
         return self.data^
 
-    fn as_data[
-        self_origin: ImmutOrigin
-    ](ref [self_origin]self) -> LegacyUnsafePointer[ArrayData, mut=False]:
-        return LegacyUnsafePointer(to=self.data)
-
+    fn as_data(self) -> UnsafePointer[ArrayData, ImmutAnyOrigin]:
+        return UnsafePointer(to=self.data) 
+    
     fn grow(mut self, capacity: Int):
         self.bitmap()[].grow(capacity)
         self.buffer()[].grow[Self.T.native](capacity)
@@ -156,8 +154,8 @@ struct PrimitiveArray[T: DataType](Array):
                 dtype=materialize[Self.T](),
                 length=size,
                 bitmap=ArcPointer(bitmap^),
-                buffers=List(ArcPointer(buffer^)),
-                children=List[ArcPointer[ArrayData]](),
+                buffers=[ArcPointer(buffer^)],
+                children=[],
                 offset=0,
             ),
         )

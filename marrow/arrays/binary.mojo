@@ -40,8 +40,8 @@ struct StringArray(Array):
             dtype=materialize[string](),
             length=0,
             bitmap=ArcPointer(bitmap^),
-            buffers=List(ArcPointer(offsets^), ArcPointer(values^)),
-            children=List[ArcPointer[ArrayData]](),
+            buffers=[ArcPointer(offsets^), ArcPointer(values^)],
+            children= [],
             offset=0,
         )
 
@@ -52,10 +52,8 @@ struct StringArray(Array):
     fn __len__(self) -> Int:
         return self.data.length
 
-    fn as_data[
-        self_origin: ImmutOrigin
-    ](ref [self_origin]self) -> LegacyUnsafePointer[ArrayData, mut=False]:
-        return LegacyUnsafePointer(to=self.data)
+    fn as_data(self) -> UnsafePointer[ArrayData, ImmutAnyOrigin]:
+        return UnsafePointer(to=self.data)
 
     fn take_data(deinit self) -> ArrayData:
         return self.data^
@@ -93,7 +91,7 @@ struct StringArray(Array):
         var length = Int(end_offset) - Int(start_offset)
         return StringSlice(
             unsafe_from_utf8=Span[Byte](
-                ptr=UnsafePointer(address).mut_cast[False](), length=length
+                ptr=address.mut_cast[False](), length=length
             )
         )
 
