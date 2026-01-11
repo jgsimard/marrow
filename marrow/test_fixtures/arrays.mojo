@@ -87,8 +87,8 @@ fn build_list_of_int[data_type: DataType]() raises -> ListArray:
         dtype=materialize[data_type](),
         length=10,
         bitmap=ArcPointer(bitmap^),
-        buffers=List(buffer),
-        children=List[ArcPointer[ArrayData]](),
+        buffers=[buffer],
+        children=[],
         offset=0,
     )
 
