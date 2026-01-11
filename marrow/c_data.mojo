@@ -14,13 +14,9 @@ from .arrays import *
 comptime ARROW_FLAG_NULLABLE = 2
 
 # This type of the function argument is really CArrowSchema but we are getting errors with: recursive reference to declaration.
-comptime CSchemaReleaseFunction = fn (
-    schema: UnsafePointer[UInt64]
-) -> NoneType
+comptime CSchemaReleaseFunction = fn (schema: UnsafePointer[UInt64]) -> NoneType
 # This type of the function argument is really CArrowArray but we are getting errors with: recursive reference to declaration.
-comptime CArrayReleaseFunction = fn (
-    schema: UnsafePointer[UInt64]
-) -> NoneType
+comptime CArrayReleaseFunction = fn (schema: UnsafePointer[UInt64]) -> NoneType
 
 
 @fieldwise_init
@@ -30,7 +26,9 @@ struct CArrowSchema(Copyable, Movable, Representable, Stringable, Writable):
     var metadata: UnsafePointer[c_char, MutAnyOrigin]
     var flags: Int64
     var n_children: Int64
-    var children: UnsafePointer[UnsafePointer[CArrowSchema, MutAnyOrigin], MutAnyOrigin]
+    var children: UnsafePointer[
+        UnsafePointer[CArrowSchema, MutAnyOrigin], MutAnyOrigin
+    ]
     var dictionary: UnsafePointer[CArrowSchema, MutAnyOrigin]
     # TODO(kszucs): release callback must be called otherwise memory gets leaked
     var release: UnsafePointer[CSchemaReleaseFunction, MutAnyOrigin]
@@ -45,7 +43,7 @@ struct CArrowSchema(Copyable, Movable, Representable, Stringable, Writable):
 
     @staticmethod
     fn from_pyarrow(pyobj: PythonObject) raises -> CArrowSchema:
-        var ptr = UnsafePointer[CArrowSchema].alloc(1)
+        var ptr = alloc[CArrowSchema](1)
         pyobj._export_to_c(Int(ptr))
         return ptr.take_pointee()
 
@@ -58,7 +56,9 @@ struct CArrowSchema(Copyable, Movable, Representable, Stringable, Writable):
     fn from_dtype(dtype: DataType) -> CArrowSchema:
         var fmt: String
         var n_children: Int64 = 0
-        var children = UnsafePointer[UnsafePointer[CArrowSchema]]()
+        var children = UnsafePointer[
+            UnsafePointer[CArrowSchema, MutAnyOrigin], MutAnyOrigin
+        ]()
 
         if dtype == materialize[null]():
             fmt = "n"
@@ -95,9 +95,9 @@ struct CArrowSchema(Copyable, Movable, Representable, Stringable, Writable):
 
             fmt = "+s"
             n_children = Int(len(dtype.fields))
-            children = UnsafePointer[
-                UnsafePointer[CArrowSchema]
-            ].alloc(Int(n_children))
+            children = alloc[UnsafePointer[CArrowSchema, MutAnyOrigin]](
+                Int(n_children)
+            )
 
             for i in range(n_children):
                 var child = CArrowSchema.from_field(dtype.fields[i])
@@ -108,15 +108,15 @@ struct CArrowSchema(Copyable, Movable, Representable, Stringable, Writable):
 
         return CArrowSchema(
             format=fmt.unsafe_cstr_ptr(),
-            name=UnsafePointer[c_char](),
-            metadata=UnsafePointer[c_char](),
+            name=UnsafePointer[c_char, MutAnyOrigin](),
+            metadata=UnsafePointer[c_char, MutAnyOrigin](),
             flags=0,
             n_children=n_children,
             children=children,
-            dictionary=UnsafePointer[CArrowSchema](),
+            dictionary=UnsafePointer[CArrowSchema, MutAnyOrigin](),
             # TODO(kszucs): currently there is no way to pass a mojo callback to C
-            release=UnsafePointer[CSchemaReleaseFunction](),
-            private_data=UnsafePointer[NoneType](),
+            release=UnsafePointer[CSchemaReleaseFunction, MutAnyOrigin](),
+            private_data=UnsafePointer[NoneType, MutAnyOrigin](),
         )
 
     @staticmethod
@@ -130,15 +130,17 @@ struct CArrowSchema(Copyable, Movable, Representable, Stringable, Writable):
             metadata="".unsafe_cstr_ptr(),
             flags=flags,
             n_children=0,
-            children=UnsafePointer[UnsafePointer[CArrowSchema]](),
-            dictionary=UnsafePointer[CArrowSchema](),
+            children=UnsafePointer[
+                UnsafePointer[CArrowSchema, MutAnyOrigin], MutAnyOrigin
+            ](),
+            dictionary=UnsafePointer[CArrowSchema, MutAnyOrigin](),
             # TODO(kszucs): currently there is no way to pass a mojo callback to C
-            release=UnsafePointer[CSchemaReleaseFunction](),
-            private_data=UnsafePointer[NoneType](),
+            release=UnsafePointer[CSchemaReleaseFunction, MutAnyOrigin](),
+            private_data=UnsafePointer[NoneType, MutAnyOrigin](),
         )
 
     fn to_dtype(self) raises -> DataType:
-        var fmt = StringSlice(unsafe_from_utf8_ptr=UnsafePointer(self.format))
+        var fmt = StringSlice(unsafe_from_utf8_ptr=self.format.bitcast[UInt8]())
         # TODO(kszucs): not the nicest, but dictionary literals are not supported yet
         if fmt == "n":
             return materialize[null]()
@@ -182,7 +184,7 @@ struct CArrowSchema(Copyable, Movable, Representable, Stringable, Writable):
             raise Error("Unknown format: " + fmt)
 
     fn to_field(self) raises -> Field:
-        var name = StringSlice(unsafe_from_utf8_ptr=UnsafePointer(self.name))
+        var name = StringSlice(unsafe_from_utf8_ptr=self.name.bitcast[UInt8]())
         var dtype = self.to_dtype()
         var nullable = self.flags & ARROW_FLAG_NULLABLE
         return Field(String(name), dtype^, nullable != 0)
@@ -197,22 +199,16 @@ struct CArrowSchema(Copyable, Movable, Representable, Stringable, Writable):
         Args:
             writer: The object to write to.
         """
-        writer.write("CArrowSchema(")
-        writer.write('name="')
-        writer.write(StringSlice(unsafe_from_utf8_ptr=UnsafePointer(self.name)))
-        writer.write('", ')
-        writer.write('format="')
-        writer.write(
-            StringSlice(unsafe_from_utf8_ptr=UnsafePointer(self.format))
+        var metadata = 'metadata="{}", '.format(
+            self.metadata[]
+        ) if self.metadata else ""
+        var str = (
+            'CArrowSchema(name="{}", format="{}", {}n_children={})'.format(
+                self.name[], self.format[], metadata, self.n_children
+            )
         )
-        writer.write('", ')
-        if self.metadata:
-            writer.write('metadata="')
-            writer.write(self.metadata)
-            writer.write('", ')
-        writer.write("n_children=")
-        writer.write(self.n_children)
-        writer.write(")")
+
+        writer.write(str)
 
     fn __str__(self) -> String:
         return String.write(self)
@@ -228,15 +224,19 @@ struct CArrowArray(Copyable, Movable):
     var offset: Int64
     var n_buffers: Int64
     var n_children: Int64
-    var buffers: UnsafePointer[UnsafePointer[NoneType, MutAnyOrigin], MutAnyOrigin]
-    var children: UnsafePointer[UnsafePointer[CArrowArray, MutAnyOrigin], MutAnyOrigin]
+    var buffers: UnsafePointer[
+        UnsafePointer[NoneType, MutAnyOrigin], MutAnyOrigin
+    ]
+    var children: UnsafePointer[
+        UnsafePointer[CArrowArray, MutAnyOrigin], MutAnyOrigin
+    ]
     var dictionary: UnsafePointer[CArrowArray, MutAnyOrigin]
     var release: UnsafePointer[CArrayReleaseFunction, MutAnyOrigin]
     var private_data: UnsafePointer[NoneType, MutAnyOrigin]
 
     @staticmethod
     fn from_pyarrow(pyobj: PythonObject) raises -> CArrowArray:
-        var ptr = UnsafePointer[CArrowArray].alloc(1)
+        var ptr = alloc[CArrowArray](1)
         pyobj._export_to_c(Int(ptr))
         return ptr.take_pointee()
 
@@ -318,7 +318,7 @@ struct CArrowArrayStreamOpaque(Copyable, Movable):
     var release: AnyFunction
 
     # Opaque producer-specific data
-    var private_data: UnsafePointer[NoneType]
+    var private_data: UnsafePointer[NoneType, MutAnyOrigin]
 
 
 comptime get_schema_fn = fn (
@@ -343,22 +343,22 @@ struct CArrowArrayStream(Copyable, Movable):
     ) -> UInt
     var get_last_error: fn (
         stream: UnsafePointer[CArrowArrayStreamOpaque]
-    ) -> UnsafePointer[c_char]
+    ) -> UnsafePointer[c_char, MutAnyOrigin]
 
     # Release callback
-    var release: fn (
-        stream: UnsafePointer[CArrowArrayStreamOpaque]
-    ) -> None
+    var release: fn (stream: UnsafePointer[CArrowArrayStreamOpaque]) -> None
 
     # Opaque producer-specific data
-    var private_data: UnsafePointer[NoneType]
+    var private_data: UnsafePointer[NoneType, MutAnyOrigin]
 
 
 @fieldwise_init
 struct ArrowArrayStream(Copyable, Movable):
     """Provide an fiendly interface to the C Arrow Array Stream."""
 
-    var c_arrow_array_stream: UnsafePointer[CArrowArrayStreamOpaque]
+    var c_arrow_array_stream: UnsafePointer[
+        CArrowArrayStreamOpaque, MutAnyOrigin
+    ]
 
     @staticmethod
     fn from_pyarrow(
@@ -377,7 +377,7 @@ struct ArrowArrayStream(Copyable, Movable):
 
     fn c_schema(self) raises -> CArrowSchema:
         """Return the C variant of the Arrow Schema."""
-        var schema = UnsafePointer[CArrowSchema].alloc(1)
+        var schema = alloc[CArrowSchema](1)
         var function = UnsafePointer(
             to=self.c_arrow_array_stream[].get_schema
         ).bitcast[get_schema_fn]()[]
@@ -390,7 +390,7 @@ struct ArrowArrayStream(Copyable, Movable):
 
     fn c_next(self) raises -> CArrowArray:
         """Return the next buffer in the streeam."""
-        var arrow_array = UnsafePointer[CArrowArray].alloc(1)
+        var arrow_array = alloc[CArrowArray](1)
         var function = UnsafePointer(
             to=self.c_arrow_array_stream[].get_next
         ).bitcast[get_next_fn]()[]

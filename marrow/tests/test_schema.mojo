@@ -20,7 +20,7 @@ def test_schema_primitive_fields():
     """Test the schema with primitive fields."""
 
     # Create a schema with different data types
-    fields = List[Field](
+    fields = [
         Field("field1", materialize[int8]()),
         Field("field2", materialize[int16]()),
         Field("field3", materialize[int32]()),
@@ -34,7 +34,7 @@ def test_schema_primitive_fields():
         Field("field11", materialize[float64]()),
         Field("field12", materialize[binary]()),
         Field("field13", materialize[string]()),
-    )
+    ]
     var nb_fields = len(fields)
 
     var schema = Schema(fields=fields^)
@@ -48,10 +48,10 @@ def test_schema_primitive_fields():
 
 
 def test_schema_names() -> None:
-    fields = List[Field](
+    fields = [
         Field("field1", materialize[int8](), False),
         Field("field2", materialize[int16](), False),
-    )
+    ]
 
     var schema = Schema(fields=fields^)
     assert_equal(
