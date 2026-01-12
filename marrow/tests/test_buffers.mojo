@@ -4,7 +4,9 @@ from marrow.test_fixtures.arrays import assert_bitmap_set
 from marrow.buffers import *
 
 
-def is_aligned[T: AnyType](ptr: UnsafePointer[T, MutAnyOrigin], alignment: Int) -> Bool:
+def is_aligned[
+    T: AnyType
+](ptr: UnsafePointer[T, MutAnyOrigin], alignment: Int) -> Bool:
     return (Int(ptr) % alignment) == 0
 
 

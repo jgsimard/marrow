@@ -114,8 +114,8 @@ struct PrimitiveArray[T: DataType](Array):
         return self.data^
 
     fn as_data(self) -> UnsafePointer[ArrayData, ImmutAnyOrigin]:
-        return UnsafePointer(to=self.data) 
-    
+        return UnsafePointer(to=self.data)
+
     fn grow(mut self, capacity: Int):
         self.bitmap()[].grow(capacity)
         self.buffer()[].grow[Self.T.native](capacity)

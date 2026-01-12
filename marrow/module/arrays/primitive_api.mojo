@@ -31,9 +31,9 @@ struct PrimitiveArray(Movable, Representable):
     ) raises -> PythonObject:
         """Access the element at the given index."""
         var self_ptr = py_self.downcast_value_ptr[Self]()
-        return PythonObject(primitive.Int64Array(self_ptr[].data.copy()).unsafe_get(
-            Int(index)
-        ))
+        return PythonObject(
+            primitive.Int64Array(self_ptr[].data.copy()).unsafe_get(Int(index))
+        )
 
 
 fn array(content: PythonObject) raises -> PythonObject:

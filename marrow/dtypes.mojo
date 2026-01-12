@@ -195,9 +195,7 @@ struct Field(Copyable, Equatable, Representable, Stringable, Writable):
         return String.write(self)
 
 
-struct DataType(
-    Copyable, Equatable, Representable, Stringable, Writable
-):
+struct DataType(Copyable, Equatable, Representable, Stringable, Writable):
     var code: UInt8
     var native: DType
     var fields: List[Field]

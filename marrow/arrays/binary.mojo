@@ -41,7 +41,7 @@ struct StringArray(Array):
             length=0,
             bitmap=ArcPointer(bitmap^),
             buffers=[ArcPointer(offsets^), ArcPointer(values^)],
-            children= [],
+            children=[],
             offset=0,
         )
 
