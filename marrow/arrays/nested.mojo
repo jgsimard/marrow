@@ -51,8 +51,8 @@ struct ListArray(Array):
             dtype=list_dtype^,
             length=1,
             bitmap=ArcPointer(bitmap^),
-            buffers=List(ArcPointer(offsets^)),
-            children=List(ArcPointer(values_data^)),
+            buffers=[ArcPointer(offsets^)],
+            children=[ArcPointer(values_data^)],
             offset=0,
         )
 
@@ -63,10 +63,8 @@ struct ListArray(Array):
     fn __len__(self) -> Int:
         return self.data.length
 
-    fn as_data[
-        self_origin: ImmutOrigin
-    ](ref [self_origin]self) -> LegacyUnsafePointer[ArrayData, mut=False]:
-        return LegacyUnsafePointer(to=self.data)
+    fn as_data(self) -> UnsafePointer[ArrayData, ImmutAnyOrigin]:
+        return UnsafePointer(to=self.data)
 
     fn take_data(deinit self) -> ArrayData:
         return self.data^
@@ -169,10 +167,8 @@ struct StructArray(Array):
     fn take_data(deinit self) -> ArrayData:
         return self.data^
 
-    fn as_data[
-        self_origin: ImmutOrigin
-    ](ref [self_origin]self) -> LegacyUnsafePointer[ArrayData, mut=False]:
-        return LegacyUnsafePointer(to=self.data)
+    fn as_data(self) -> UnsafePointer[ArrayData, ImmutAnyOrigin]:
+        return UnsafePointer(to=self.data)
 
     fn write_to[W: Writer](self, mut writer: W):
         """

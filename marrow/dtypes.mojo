@@ -144,7 +144,7 @@ comptime LIST_VIEW = 41
 comptime LARGE_LIST_VIEW = 42
 
 
-struct Field(Copyable, Equatable, Movable, Representable, Stringable, Writable):
+struct Field(Copyable, Equatable, Representable, Stringable, Writable):
     var name: String
     var dtype: DataType
     var nullable: Bool
@@ -195,9 +195,7 @@ struct Field(Copyable, Equatable, Movable, Representable, Stringable, Writable):
         return String.write(self)
 
 
-struct DataType(
-    Copyable, Equatable, Movable, Representable, Stringable, Writable
-):
+struct DataType(Copyable, Equatable, Representable, Stringable, Writable):
     var code: UInt8
     var native: DType
     var fields: List[Field]
@@ -208,27 +206,27 @@ struct DataType(
         self.fields = List[Field]()
 
     fn __init__(out self, native: DType):
-        if native is DType.bool:
+        if native == DType.bool:
             self.code = BOOL
-        elif native is DType.int8:
+        elif native == DType.int8:
             self.code = INT8
-        elif native is DType.int16:
+        elif native == DType.int16:
             self.code = INT16
-        elif native is DType.int32:
+        elif native == DType.int32:
             self.code = INT32
-        elif native is DType.int64:
+        elif native == DType.int64:
             self.code = INT64
-        elif native is DType.uint8:
+        elif native == DType.uint8:
             self.code = UINT8
-        elif native is DType.uint16:
+        elif native == DType.uint16:
             self.code = UINT16
-        elif native is DType.uint32:
+        elif native == DType.uint32:
             self.code = UINT32
-        elif native is DType.uint64:
+        elif native == DType.uint64:
             self.code = UINT64
-        elif native is DType.float32:
+        elif native == DType.float32:
             self.code = FLOAT32
-        elif native is DType.float64:
+        elif native == DType.float64:
             self.code = FLOAT64
         else:
             self.code = NA
@@ -397,7 +395,7 @@ struct DataType(
 
 
 fn list_(var value_type: DataType) -> DataType:
-    return DataType(code=LIST, fields=List(Field("value", value_type^)))
+    return DataType(code=LIST, fields=[Field("value", value_type^)])
 
 
 fn struct_(fields: List[Field]) -> DataType:

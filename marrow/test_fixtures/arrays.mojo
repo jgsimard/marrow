@@ -41,7 +41,7 @@ def build_array_data(length: Int, nulls: Int) -> ArrayData:
                 is_valid = False
         bitmap.unsafe_set(i, is_valid)
 
-    var buffers = List(ArcPointer(buffer^))
+    var buffers = [ArcPointer(buffer^)]
     return ArrayData(
         dtype=materialize[uint8](),
         length=length,
@@ -87,8 +87,8 @@ fn build_list_of_int[data_type: DataType]() raises -> ListArray:
         dtype=materialize[data_type](),
         length=10,
         bitmap=ArcPointer(bitmap^),
-        buffers=List(buffer),
-        children=List[ArcPointer[ArrayData]](),
+        buffers=[buffer],
+        children=[],
         offset=0,
     )
 
@@ -103,8 +103,8 @@ fn build_list_of_int[data_type: DataType]() raises -> ListArray:
     var list_data = ArrayData(
         dtype=list_(materialize[data_type]()),
         length=6,
-        buffers=List(value_offset),
-        children=List(ArcPointer(value_data^)),
+        buffers=[value_offset],
+        children=[ArcPointer(value_data^)],
         bitmap=list_bitmap,
         offset=0,
     )
@@ -128,8 +128,8 @@ fn build_list_of_list[data_type: DataType]() raises -> ListArray:
         dtype=materialize[data_type](),
         length=10,
         bitmap=bitmap,
-        buffers=List(buffer),
-        children=List[ArcPointer[ArrayData]](),
+        buffers=[buffer],
+        children=[],
         offset=0,
     )
 
@@ -144,8 +144,8 @@ fn build_list_of_list[data_type: DataType]() raises -> ListArray:
     var list_data = ArrayData(
         dtype=list_(materialize[data_type]()),
         length=6,
-        buffers=List(value_offset),
-        children=List(ArcPointer(value_data^)),
+        buffers=[value_offset],
+        children=[ArcPointer(value_data^)],
         bitmap=list_bitmap,
         offset=0,
     )
@@ -158,8 +158,8 @@ fn build_list_of_list[data_type: DataType]() raises -> ListArray:
         ArrayData(
             dtype=list_(list_(materialize[data_type]())),
             length=4,
-            buffers=List(ArcPointer(top_offsets^)),
-            children=List(ArcPointer(list_data^)),
+            buffers=[ArcPointer(top_offsets^)],
+            children=[ArcPointer(list_data^)],
             bitmap=top_bitmap,
             offset=0,
         )
@@ -179,11 +179,11 @@ def build_struct() -> StructArray:
     bitmap = Bitmap.alloc(2)
     bitmap.unsafe_range_set(0, 2, True)
     var struct_array_data = ArrayData(
-        dtype=struct_(List(field_1^, field_2^)),
+        dtype=struct_([field_1^, field_2^]),
         length=2,
         bitmap=ArcPointer(bitmap^),
         offset=0,
-        buffers=List[ArcPointer[Buffer]](),
-        children=List(ArcPointer(int_data_a^), ArcPointer(int_data_b^)),
+        buffers=[],
+        children=[ArcPointer(int_data_a^), ArcPointer(int_data_b^)],
     )
     return StructArray(data=struct_array_data^)

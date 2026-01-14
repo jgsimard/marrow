@@ -74,11 +74,11 @@ def test_list_of_list():
 
 
 def test_struct_array():
-    var fields = List[Field](
+    var fields = [
         Field("id", materialize[int64]()),
         Field("name", materialize[string]()),
         Field("active", materialize[bool_]()),
-    )
+    ]
 
     var struct_arr = StructArray(fields^, capacity=10)
     assert_equal(len(struct_arr), 0)
@@ -106,10 +106,10 @@ def test_list_array_str_repr():
 
 
 def test_struct_array_str_repr():
-    var fields = List[Field](
+    var fields = [
         Field("id", materialize[int64]()),
         Field("name", materialize[string]()),
-    )
+    ]
 
     var struct_arr = StructArray(fields^, capacity=5)
 

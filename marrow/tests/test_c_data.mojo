@@ -163,14 +163,18 @@ def test_schema_from_dtype():
 
 def test_schema_to_field():
     var pa = Python.import_module("pyarrow")
-    var pyfield = pa.field("test_field", pa.int32(), nullable=True)
+    var pyfield = pa.field(
+        "test_field", pa.int32(), nullable=PythonObject(True)
+    )
     var c_schema = CArrowSchema.from_pyarrow(pyfield)
     var field = c_schema.to_field()
     assert_equal(field.name, "test_field")
     assert_equal(field.dtype, materialize[int32]())
     assert_equal(field.nullable, True)
 
-    var pyfield_str = pa.field("string_field", pa.string(), nullable=False)
+    var pyfield_str = pa.field(
+        "string_field", pa.string(), nullable=PythonObject(False)
+    )
     var c_schema_str = CArrowSchema.from_pyarrow(pyfield_str)
     var field_str = c_schema_str.to_field()
     assert_equal(field_str.name, "string_field")

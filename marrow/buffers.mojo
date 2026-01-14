@@ -1,5 +1,5 @@
 from memory import (
-    LegacyUnsafePointer,
+    UnsafePointer,
     memset_zero,
     memcpy,
     ArcPointer,
@@ -15,7 +15,7 @@ from bit import pop_count, count_trailing_zeros
 
 fn _required_bytes(length: Int, T: DType) -> Int:
     var size: Int
-    if T is DType.bool:
+    if T == DType.bool:
         size = math.ceildiv(length, 8)
     else:
         size = length * dynamic_size_of(T)
@@ -28,14 +28,14 @@ comptime simd_widths = (simd_width, simd_width // 2, 1)
 
 
 struct Buffer(Movable):
-    var ptr: LegacyUnsafePointer[UInt8]
+    var ptr: UnsafePointer[UInt8, MutAnyOrigin]
     var size: Int
     var owns: Bool
     var offset: Int
 
     fn __init__(
         out self,
-        ptr: LegacyUnsafePointer[UInt8],
+        ptr: UnsafePointer[UInt8, MutAnyOrigin],
         size: Int,
         owns: Bool = True,
         offset: Int = 0,
@@ -88,7 +88,7 @@ struct Buffer(Movable):
     fn view[
         I: Intable, //
     ](
-        ptr: LegacyUnsafePointer[NoneType],
+        ptr: UnsafePointer[NoneType, MutAnyOrigin],
         length: I,
         dtype: DType = DType.uint8,
     ) raises -> Buffer:
@@ -96,7 +96,7 @@ struct Buffer(Movable):
         return Buffer(ptr.bitcast[UInt8](), size, owns=False)
 
     @always_inline
-    fn get_ptr_at(self, index: Int) -> LegacyUnsafePointer[UInt8]:
+    fn get_ptr_at(self, index: Int) -> UnsafePointer[UInt8, MutAnyOrigin]:
         return (self.ptr + index).bitcast[UInt8]()
 
     fn grow[I: Intable, //, T: DType = DType.uint8](mut self, target_length: I):
@@ -118,7 +118,7 @@ struct Buffer(Movable):
     @always_inline
     fn length[T: DType = DType.uint8](self) -> Int:
         @parameter
-        if T is DType.bool:
+        if T == DType.bool:
             return self.size * 8
         else:
             return self.size // size_of[T]()
@@ -128,7 +128,7 @@ struct Buffer(Movable):
         comptime output = Scalar[T]
 
         @parameter
-        if T is DType.bool:
+        if T == DType.bool:
             var adjusted_index = index + self.offset
             var byte_index = adjusted_index // 8
             var bit_index = adjusted_index % 8
@@ -143,7 +143,7 @@ struct Buffer(Movable):
         T: DType = DType.uint8
     ](mut self, index: Int, value: Scalar[T]):
         @parameter
-        if T is DType.bool:
+        if T == DType.bool:
             var adjusted_index = index + self.offset
             var byte_index = adjusted_index // 8
             var bit_index = adjusted_index % 8

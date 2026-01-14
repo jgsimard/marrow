@@ -1,6 +1,6 @@
 """Test the base module."""
 from testing import assert_true, assert_false, assert_equal, TestSuite
-from memory import LegacyUnsafePointer, ArcPointer
+from memory import UnsafePointer, ArcPointer
 from marrow.arrays.base import ArrayData
 from marrow.buffers import Buffer, Bitmap
 from marrow.dtypes import DType, int8, uint8, int64
@@ -28,8 +28,8 @@ def test_array_data_with_offset():
         dtype=materialize[int8](),
         length=3,
         bitmap=bitmap,
-        buffers=List(buffer),
-        children=List[ArcPointer[ArrayData]](),
+        buffers=[buffer],
+        children=[],
         offset=2,
     )
 
@@ -51,8 +51,8 @@ def test_array_data_fieldwise_init():
         dtype=materialize[int8](),
         length=5,
         bitmap=bitmap,
-        buffers=List(buffer),
-        children=List[ArcPointer[ArrayData]](),
+        buffers=[buffer],
+        children=[],
         offset=3,
     )
 
@@ -84,8 +84,8 @@ def test_array_data_write_to_with_offset():
             dtype=materialize[dtype](),
             length=3,
             bitmap=bitmap,
-            buffers=List(buffer),
-            children=List[ArcPointer[ArrayData]](),
+            buffers=[buffer],
+            children=[],
             offset=1,
         )
 

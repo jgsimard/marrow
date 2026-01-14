@@ -58,11 +58,11 @@ def test_list_list_array():
 
 
 def test_empty_struct():
-    var fields = List[Field](
+    var fields = [
         Field("id", materialize[int64]()),
         Field("name", materialize[string]()),
         Field("active", materialize[bool_]()),
-    )
+    ]
 
     var struct_arr = StructArray(fields^, capacity=10)
 
