@@ -8,7 +8,7 @@ from memory import ArcPointer
 from marrow.buffers import Buffer, Bitmap
 from marrow.dtypes import uint8, DataType, list_, int32, Field, struct_
 from testing import assert_equal
-from builtin._location import __call_location
+from reflection import call_location
 
 
 fn as_bool_array_scalar(value: Bool) -> BoolArray.scalar:
@@ -70,7 +70,7 @@ def assert_bitmap_set(
             String(
                 "{}: Bitmap index {} is {}, expected {} as per list position {}"
             ).format(message, i, current_value, expected_value, list_pos),
-            location=__call_location(),
+            location=call_location(),
         )
 
 
