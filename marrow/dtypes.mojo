@@ -203,7 +203,7 @@ struct DataType(Copyable, Equatable, Representable, Stringable, Writable):
     fn __init__(out self, *, code: UInt8):
         self.code = code
         self.native = DType.invalid
-        self.fields = List[Field]()
+        self.fields = []
 
     fn __init__(out self, native: DType):
         if native == DType.bool:
@@ -231,12 +231,12 @@ struct DataType(Copyable, Equatable, Representable, Stringable, Writable):
         else:
             self.code = NA
         self.native = native
-        self.fields = List[Field]()
+        self.fields = []
 
     fn __init__(out self, *, code: UInt8, native: DType):
         self.code = code
         self.native = native
-        self.fields = List[Field]()
+        self.fields = []
 
     fn __init__(out self, *, code: UInt8, fields: List[Field]):
         self.code = code
