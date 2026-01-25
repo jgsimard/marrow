@@ -53,19 +53,11 @@ struct Buffer(Movable):
 
     fn swap(mut self, mut other: Self):
         """Swap the content of this buffer with another buffer."""
+        swap(self.ptr, other.ptr)
+        swap(self.size, other.size)
+        swap(self.owns, other.owns)
+        swap(self.offset, other.offset)
 
-        var tmp_ptr = self.ptr
-        var tmp_size = self.size
-        var tmp_owns = self.owns
-        var tmp_offset = self.offset
-        self.ptr = other.ptr
-        self.size = other.size
-        self.owns = other.owns
-        self.offset = other.offset
-        other.ptr = tmp_ptr
-        other.size = tmp_size
-        other.owns = tmp_owns
-        other.offset = tmp_offset
 
     @staticmethod
     fn alloc[I: Intable, //, T: DType = DType.uint8](length: I) -> Buffer:
