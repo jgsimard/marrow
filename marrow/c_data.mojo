@@ -13,10 +13,10 @@ from .arrays import *
 
 comptime ARROW_FLAG_NULLABLE = 2
 
-# This type of the function argument is really CArrowSchema but we are getting errors with: recursive reference to declaration.
-comptime CSchemaReleaseFunction = fn (schema: UnsafePointer[UInt64]) -> NoneType
-# This type of the function argument is really CArrowArray but we are getting errors with: recursive reference to declaration.
-comptime CArrayReleaseFunction = fn (schema: UnsafePointer[UInt64]) -> NoneType
+
+# TODO: Fix this
+fn empty_release_schema(ptr: UnsafePointer[CArrowSchema, MutAnyOrigin]):
+    pass
 
 
 @fieldwise_init
@@ -31,15 +31,11 @@ struct CArrowSchema(Copyable, Representable, Stringable, Writable):
     ]
     var dictionary: UnsafePointer[CArrowSchema, MutAnyOrigin]
     # TODO(kszucs): release callback must be called otherwise memory gets leaked
-    var release: UnsafePointer[CSchemaReleaseFunction, MutAnyOrigin]
-    var private_data: UnsafePointer[NoneType, MutAnyOrigin]
+    var release: fn (UnsafePointer[CArrowSchema, MutAnyOrigin]) -> None
+    var private_data: OpaquePointer[MutAnyOrigin]
 
     fn __del__(deinit self):
-        var this = UnsafePointer(to=self).bitcast[UInt64]()
-        if self.release:
-            # Calling the function leads to a crash.
-            # self.release[](this)
-            pass
+        self.release(UnsafePointer(to=self))
 
     @staticmethod
     fn from_pyarrow(pyobj: PythonObject) raises -> CArrowSchema:
@@ -117,8 +113,8 @@ struct CArrowSchema(Copyable, Representable, Stringable, Writable):
             children=children,
             dictionary=UnsafePointer[CArrowSchema, MutAnyOrigin](),
             # TODO(kszucs): currently there is no way to pass a mojo callback to C
-            release=UnsafePointer[CSchemaReleaseFunction, MutAnyOrigin](),
-            private_data=UnsafePointer[NoneType, MutAnyOrigin](),
+            release=empty_release_schema,
+            private_data=OpaquePointer[MutAnyOrigin](),
         )
 
     @staticmethod
@@ -139,8 +135,8 @@ struct CArrowSchema(Copyable, Representable, Stringable, Writable):
             ](),
             dictionary=UnsafePointer[CArrowSchema, MutAnyOrigin](),
             # TODO(kszucs): currently there is no way to pass a mojo callback to C
-            release=UnsafePointer[CSchemaReleaseFunction, MutAnyOrigin](),
-            private_data=UnsafePointer[NoneType, MutAnyOrigin](),
+            release=empty_release_schema,
+            private_data=OpaquePointer[MutAnyOrigin](),
         )
 
     fn to_dtype(self) raises -> DataType:
@@ -238,8 +234,8 @@ struct CArrowArray(Copyable):
         UnsafePointer[CArrowArray, MutAnyOrigin], MutAnyOrigin
     ]
     var dictionary: UnsafePointer[CArrowArray, MutAnyOrigin]
-    var release: UnsafePointer[CArrayReleaseFunction, MutAnyOrigin]
-    var private_data: UnsafePointer[NoneType, MutAnyOrigin]
+    var release: fn (UnsafePointer[CArrowArray, MutAnyOrigin]) -> None
+    var private_data: OpaquePointer[MutAnyOrigin]
 
     @staticmethod
     fn from_pyarrow(pyobj: PythonObject) raises -> CArrowArray:
