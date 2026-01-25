@@ -71,7 +71,7 @@ struct Buffer(Movable):
     fn alloc[I: Intable, //, T: DType = DType.uint8](length: I) -> Buffer:
         var size = _required_bytes(Int(length), T)
         var ptr = alloc[UInt8](size, alignment=64)
-        memset_zero(ptr.bitcast[UInt8](), size)
+        memset_zero(ptr, size)
         return Buffer(ptr, size)
 
     @staticmethod
@@ -97,7 +97,7 @@ struct Buffer(Movable):
 
     @always_inline
     fn get_ptr_at(self, index: Int) -> UnsafePointer[UInt8, MutAnyOrigin]:
-        return (self.ptr + index).bitcast[UInt8]()
+        return self.ptr + index
 
     fn grow[I: Intable, //, T: DType = DType.uint8](mut self, target_length: I):
         if self.length[T]() >= Int(target_length):
@@ -105,8 +105,8 @@ struct Buffer(Movable):
 
         var new = Buffer.alloc[T](target_length)
         memcpy(
-            dest=new.ptr.bitcast[UInt8](),
-            src=self.ptr.bitcast[UInt8](),
+            dest=new.ptr,
+            src=self.ptr,
             count=self.size,
         )
         self.swap(new)

@@ -144,7 +144,7 @@ struct CArrowSchema(Copyable, Representable, Stringable, Writable):
         )
 
     fn to_dtype(self) raises -> DataType:
-        var fmt = StringSlice(unsafe_from_utf8_ptr=self.format.bitcast[UInt8]())
+        var fmt = StringSlice(unsafe_from_utf8_ptr=self.format)
         # TODO(kszucs): not the nicest, but dictionary literals are not supported yet
         if fmt == "n":
             return materialize[null]()
@@ -188,7 +188,7 @@ struct CArrowSchema(Copyable, Representable, Stringable, Writable):
             raise Error("Unknown format: " + fmt)
 
     fn to_field(self) raises -> Field:
-        var name = StringSlice(unsafe_from_utf8_ptr=self.name.bitcast[UInt8]())
+        var name = StringSlice(unsafe_from_utf8_ptr=self.name)
         var dtype = self.to_dtype()
         var nullable = self.flags & ARROW_FLAG_NULLABLE
         return Field(String(name), dtype^, nullable != 0)
