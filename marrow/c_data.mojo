@@ -324,7 +324,7 @@ struct CArrowArrayStream(Copyable):
 struct ArrowArrayStream(Copyable):
     """Provide an fiendly interface to the C Arrow Array Stream."""
 
-    var c_arrow_array_stream: UnsafePointer[CArrowArrayStream, MutAnyOrigin]
+    var handle: UnsafePointer[CArrowArrayStream, MutAnyOrigin]
 
     @staticmethod
     fn from_pyarrow(
@@ -343,9 +343,7 @@ struct ArrowArrayStream(Copyable):
     fn c_schema(self) raises -> CArrowSchema:
         """Return the C variant of the Arrow Schema."""
         var schema = alloc[CArrowSchema](1)
-        var err = self.c_arrow_array_stream[].get_schema(
-            self.c_arrow_array_stream, schema
-        )
+        var err = self.handle[].get_schema(self.handle, schema)
         if err != 0:
             raise Error("Failed to get schema " + String(err))
         if not schema:
@@ -355,9 +353,7 @@ struct ArrowArrayStream(Copyable):
     fn c_next(self) raises -> CArrowArray:
         """Return the next buffer in the streeam."""
         var arrow_array = alloc[CArrowArray](1)
-        var err = self.c_arrow_array_stream[].get_next(
-            self.c_arrow_array_stream, arrow_array
-        )
+        var err = self.handle[].get_next(self.handle, arrow_array)
         if err != 0:
             raise Error("Failed to get next arrow array " + String(err))
         if not arrow_array:
