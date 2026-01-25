@@ -299,16 +299,6 @@ struct CArrowArray(Copyable):
 
 
 # See: https://arrow.apache.org/docs/format/CStreamInterface.html
-#
-# We are getting some compilation errors with many "recursive" function definitions, i.e. functions in
-# CArrowArrayStream that take a CArrowArrayStream as an argument. The error is: recursive reference to declaration.
-#
-# As a workaround we define twp versions
-# of the CArrowArrayStream:
-#   - CArrowArrayStreamOpaque defines the overall shape of the struct using opaque function prototypes.
-#   - CArrowArrayStream defines the struct with the actual function signatures defined in terms of the Opaque variant above.
-#
-# An alternative could be to define `get_schema` and friends as methods on the struct and self would have the right type.
 # It is not clear if the resulting ABI would be guaranteed to be compatible with C.
 
 
@@ -327,7 +317,7 @@ struct CArrowArrayStream(Copyable):
         UInt8, MutAnyOrigin
     ]
     var release: fn (UnsafePointer[CArrowArrayStream, MutAnyOrigin]) -> None
-    var private_data: UnsafePointer[NoneType, MutAnyOrigin]
+    var private_data: OpaquePointer[MutAnyOrigin]
 
 
 @fieldwise_init
