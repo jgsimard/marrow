@@ -310,52 +310,23 @@ struct CArrowArray(Copyable):
 #
 # An alternative could be to define `get_schema` and friends as methods on the struct and self would have the right type.
 # It is not clear if the resulting ABI would be guaranteed to be compatible with C.
-comptime AnyFunction = fn (UnsafePointer[NoneType]) -> UInt
-
-
-@fieldwise_init
-@register_passable("trivial")
-struct CArrowArrayStreamOpaque(Copyable):
-    # Callbacks providing stream functionality
-    var get_schema: AnyFunction
-    var get_next: AnyFunction
-    var get_last_error: AnyFunction
-
-    # Release callback
-    var release: AnyFunction
-
-    # Opaque producer-specific data
-    var private_data: UnsafePointer[NoneType, MutAnyOrigin]
-
-
-comptime get_schema_fn[o: Origin] = fn (
-    stream: UnsafePointer[CArrowArrayStreamOpaque, o],
-    out_schema: UnsafePointer[CArrowSchema, o],
-) -> UInt
-
-comptime get_next_fn[o: Origin] = fn (
-    stream: UnsafePointer[CArrowArrayStreamOpaque, o],
-    out_array: UnsafePointer[CArrowArray, o],
-) -> UInt
 
 
 @fieldwise_init
 @register_passable("trivial")
 struct CArrowArrayStream(Copyable):
-    # Callbacks providing stream functionality
-    var get_schema: get_schema_fn
+    var get_schema: fn (
+        UnsafePointer[CArrowArrayStream, MutAnyOrigin],
+        UnsafePointer[CArrowSchema, MutAnyOrigin],
+    ) -> Int32
     var get_next: fn (
-        stream: UnsafePointer[CArrowArrayStreamOpaque],
-        out_array: UnsafePointer[CArrowArray],
-    ) -> UInt
-    var get_last_error: fn (
-        stream: UnsafePointer[CArrowArrayStreamOpaque]
-    ) -> UnsafePointer[c_char, MutAnyOrigin]
-
-    # Release callback
-    var release: fn (stream: UnsafePointer[CArrowArrayStreamOpaque]) -> None
-
-    # Opaque producer-specific data
+        UnsafePointer[CArrowArrayStream, MutAnyOrigin],
+        UnsafePointer[CArrowArray, MutAnyOrigin],
+    ) -> Int32
+    var get_last_error: fn (UnsafePointer[CArrowArrayStream]) -> UnsafePointer[
+        UInt8, MutAnyOrigin
+    ]
+    var release: fn (UnsafePointer[CArrowArrayStream, MutAnyOrigin]) -> None
     var private_data: UnsafePointer[NoneType, MutAnyOrigin]
 
 
@@ -363,9 +334,7 @@ struct CArrowArrayStream(Copyable):
 struct ArrowArrayStream(Copyable):
     """Provide an fiendly interface to the C Arrow Array Stream."""
 
-    var c_arrow_array_stream: UnsafePointer[
-        CArrowArrayStreamOpaque, MutAnyOrigin
-    ]
+    var c_arrow_array_stream: UnsafePointer[CArrowArrayStream, MutAnyOrigin]
 
     @staticmethod
     fn from_pyarrow(
@@ -379,16 +348,14 @@ struct ArrowArrayStream(Copyable):
         if not ptr:
             raise Error("Failed to get the arrow array stream pointer")
 
-        var alt = ptr.bitcast[CArrowArrayStreamOpaque]()
-        return ArrowArrayStream(alt)
+        return ArrowArrayStream(ptr.bitcast[CArrowArrayStream]())
 
     fn c_schema(self) raises -> CArrowSchema:
         """Return the C variant of the Arrow Schema."""
         var schema = alloc[CArrowSchema](1)
-        var function = UnsafePointer(
-            to=self.c_arrow_array_stream[].get_schema
-        ).bitcast[get_schema_fn[MutAnyOrigin]]()[]
-        var err = function(self.c_arrow_array_stream, schema)
+        var err = self.c_arrow_array_stream[].get_schema(
+            self.c_arrow_array_stream, schema
+        )
         if err != 0:
             raise Error("Failed to get schema " + String(err))
         if not schema:
@@ -398,10 +365,9 @@ struct ArrowArrayStream(Copyable):
     fn c_next(self) raises -> CArrowArray:
         """Return the next buffer in the streeam."""
         var arrow_array = alloc[CArrowArray](1)
-        var function = UnsafePointer(
-            to=self.c_arrow_array_stream[].get_next
-        ).bitcast[get_next_fn[MutAnyOrigin]]()[]
-        var err = function(self.c_arrow_array_stream, arrow_array)
+        var err = self.c_arrow_array_stream[].get_next(
+            self.c_arrow_array_stream, arrow_array
+        )
         if err != 0:
             raise Error("Failed to get next arrow array " + String(err))
         if not arrow_array:
