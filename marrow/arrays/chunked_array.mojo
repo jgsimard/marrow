@@ -45,8 +45,8 @@ struct ChunkedArray:
             dtype=self.dtype.copy(),
             length=self.length,
             bitmap=bitmap,
-            buffers=List[ArcPointer[Buffer]](),
-            children=List[ArcPointer[ArrayData]](),
+            buffers=[],
+            children=[],
             offset=0,
         )
         var start = 0

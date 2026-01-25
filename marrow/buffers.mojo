@@ -58,7 +58,6 @@ struct Buffer(Movable):
         swap(self.owns, other.owns)
         swap(self.offset, other.offset)
 
-
     @staticmethod
     fn alloc[I: Intable, //, T: DType = DType.uint8](length: I) -> Buffer:
         var size = _required_bytes(Int(length), T)
