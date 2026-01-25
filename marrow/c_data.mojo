@@ -1,5 +1,5 @@
 from sys.ffi import external_call, c_char
-from memory import UnsafePointer, ArcPointer, memcpy
+from memory import ArcPointer, memcpy
 from sys import size_of
 
 import math

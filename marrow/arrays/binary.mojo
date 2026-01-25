@@ -1,5 +1,4 @@
-from memory import ArcPointer, memcpy, Span
-from collections.string import StringSlice
+from memory import ArcPointer, memcpy
 from ..buffers import Buffer
 from ..dtypes import *
 

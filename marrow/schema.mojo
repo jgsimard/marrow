@@ -4,8 +4,6 @@
 """
 from .dtypes import Field
 from .c_data import CArrowSchema
-from collections import Dict
-from collections.string import StringSlice
 
 
 struct Schema(Copyable):

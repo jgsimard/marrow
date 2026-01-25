@@ -1,9 +1,6 @@
 from memory import (
-    UnsafePointer,
     memset_zero,
     memcpy,
-    ArcPointer,
-    Span,
     memset,
 )
 from sys.info import simd_byte_width
