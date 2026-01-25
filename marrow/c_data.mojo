@@ -299,7 +299,6 @@ struct CArrowArray(Copyable):
 
 
 # See: https://arrow.apache.org/docs/format/CStreamInterface.html
-# It is not clear if the resulting ABI would be guaranteed to be compatible with C.
 
 
 @fieldwise_init
