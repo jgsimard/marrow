@@ -171,3 +171,7 @@ cython_debug/
 
 # Mojo build files
 kgen.trace.*
+
+# vscode
+.vscode/
+
