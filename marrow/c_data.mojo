@@ -31,7 +31,7 @@ struct CArrowSchema(Copyable, Representable, Stringable, Writable):
     ]
     var dictionary: UnsafePointer[CArrowSchema, MutAnyOrigin]
     # TODO(kszucs): release callback must be called otherwise memory gets leaked
-    var release: fn (UnsafePointer[CArrowSchema, MutAnyOrigin]) -> None
+    var release: fn(UnsafePointer[CArrowSchema, MutAnyOrigin]) -> None
     var private_data: OpaquePointer[MutAnyOrigin]
 
     fn __del__(deinit self):
@@ -234,7 +234,7 @@ struct CArrowArray(Copyable):
         UnsafePointer[CArrowArray, MutAnyOrigin], MutAnyOrigin
     ]
     var dictionary: UnsafePointer[CArrowArray, MutAnyOrigin]
-    var release: fn (UnsafePointer[CArrowArray, MutAnyOrigin]) -> None
+    var release: fn(UnsafePointer[CArrowArray, MutAnyOrigin]) -> None
     var private_data: OpaquePointer[MutAnyOrigin]
 
     @staticmethod
@@ -298,20 +298,19 @@ struct CArrowArray(Copyable):
 
 
 @fieldwise_init
-@register_passable("trivial")
-struct CArrowArrayStream(Copyable):
-    var get_schema: fn (
+struct CArrowArrayStream(Copyable, TrivialRegisterType):
+    var get_schema: fn(
         UnsafePointer[CArrowArrayStream, MutAnyOrigin],
         UnsafePointer[CArrowSchema, MutAnyOrigin],
     ) -> Int32
-    var get_next: fn (
+    var get_next: fn(
         UnsafePointer[CArrowArrayStream, MutAnyOrigin],
         UnsafePointer[CArrowArray, MutAnyOrigin],
     ) -> Int32
-    var get_last_error: fn (UnsafePointer[CArrowArrayStream]) -> UnsafePointer[
+    var get_last_error: fn(UnsafePointer[CArrowArrayStream]) -> UnsafePointer[
         UInt8, MutAnyOrigin
     ]
-    var release: fn (UnsafePointer[CArrowArrayStream, MutAnyOrigin]) -> None
+    var release: fn(UnsafePointer[CArrowArrayStream, MutAnyOrigin]) -> None
     var private_data: OpaquePointer[MutAnyOrigin]
 
 
