@@ -202,7 +202,8 @@ struct CArrowSchema(Copyable, Representable, Stringable, Writable):
         var metadata = 'metadata="{}", '.format(
             StringSlice(unsafe_from_utf8_ptr=self.metadata)
         ) if self.metadata else ""
-        var str = (
+
+        writer.write(
             'CArrowSchema(name="{}", format="{}", {}n_children={})'.format(
                 StringSlice(unsafe_from_utf8_ptr=self.name),
                 StringSlice(unsafe_from_utf8_ptr=self.format),
@@ -210,8 +211,6 @@ struct CArrowSchema(Copyable, Representable, Stringable, Writable):
                 self.n_children,
             )
         )
-
-        writer.write(str)
 
     fn __str__(self) -> String:
         return String.write(self)
