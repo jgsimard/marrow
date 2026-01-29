@@ -163,9 +163,6 @@ struct Field(Copyable, Equatable, Representable, Stringable, Writable):
             and self.nullable == other.nullable
         )
 
-    fn __ne__(self, other: Field) -> Bool:
-        return not self == other
-
     fn write_to[W: Writer](self, mut writer: W):
         """
         Formats this Field to the provided Writer.
@@ -176,17 +173,11 @@ struct Field(Copyable, Equatable, Representable, Stringable, Writable):
         Args:
             writer: The object to write to.
         """
-        writer.write("Field(")
-        writer.write('name="')
-        writer.write(self.name)
-        writer.write('", ')
-        writer.write("dtype=")
-        writer.write(self.dtype)
-        writer.write(", ")
-        writer.write("nullable=")
-        writer.write(self.nullable)
-        writer.write(", ")
-        writer.write(")")
+        writer.write(
+            'Field(name="{}", dtype={}, nullable={}, )'.format(
+                self.name, self.dtype, self.nullable
+            )
+        )
 
     fn __str__(self) -> String:
         return String.write(self)
@@ -256,9 +247,6 @@ struct DataType(Copyable, Equatable, Representable, Stringable, Writable):
     fn __is__(self, other: DataType) -> Bool:
         return self == other
 
-    fn __isnot__(self, other: DataType) -> Bool:
-        return self != other
-
     fn __eq__(self, other: DataType) -> Bool:
         if self.code != other.code:
             return False
@@ -268,9 +256,6 @@ struct DataType(Copyable, Equatable, Representable, Stringable, Writable):
             if self.fields[i] != other.fields[i]:
                 return False
         return True
-
-    fn __ne__(self, other: DataType) -> Bool:
-        return not self == other
 
     fn write_to[W: Writer](self, mut writer: W):
         """
