@@ -4,144 +4,144 @@ from sys import size_of
 # The following enum codes are copied from the C++ implementation of Arrow
 
 # A NULL type having no physical storage
-comptime NA = 0
+comptime NA: UInt8 = 0
 
 # Boolean as 1 bit, LSB bit-packed ordering
-comptime BOOL = 1
+comptime BOOL: UInt8 = 1
 
 # Unsigned 8-bit little-endian integer
-comptime UINT8 = 2
+comptime UINT8: UInt8 = 2
 
 # Signed 8-bit little-endian integer
-comptime INT8 = 3
+comptime INT8: UInt8 = 3
 
 # Unsigned 16-bit little-endian integer
-comptime UINT16 = 4
+comptime UINT16: UInt8 = 4
 
 # Signed 16-bit little-endian integer
-comptime INT16 = 5
+comptime INT16: UInt8 = 5
 
 # Unsigned 32-bit little-endian integer
-comptime UINT32 = 6
+comptime UINT32: UInt8 = 6
 
 # Signed 32-bit little-endian integer
-comptime INT32 = 7
+comptime INT32: UInt8 = 7
 
 # Unsigned 64-bit little-endian integer
-comptime UINT64 = 8
+comptime UINT64: UInt8 = 8
 
 # Signed 64-bit little-endian integer
-comptime INT64 = 9
+comptime INT64: UInt8 = 9
 
 # 2-byte floating point value
-comptime FLOAT16 = 10
+comptime FLOAT16: UInt8 = 10
 
 # 4-byte floating point value
-comptime FLOAT32 = 11
+comptime FLOAT32: UInt8 = 11
 
 # 8-byte floating point value
-comptime FLOAT64 = 12
+comptime FLOAT64: UInt8 = 12
 
 # UTF8 variable-length string as List<Char>
-comptime STRING = 13
+comptime STRING: UInt8 = 13
 
 # Variable-length bytes (no guarantee of UTF8-ness)
-comptime BINARY = 14
+comptime BINARY: UInt8 = 14
 
 # Fixed-size binary. Each value occupies the same number of bytes
-comptime FIXED_SIZE_BINARY = 15
+comptime FIXED_SIZE_BINARY: UInt8 = 15
 
 # int32_t days since the UNIX epoch
-comptime DATE32 = 16
+comptime DATE32: UInt8 = 16
 
 # int64_t milliseconds since the UNIX epoch
-comptime DATE64 = 17
+comptime DATE64: UInt8 = 17
 
 # Exact timestamp encoded with int64 since UNIX epoch
 # Default unit millisecond
-comptime TIMESTAMP = 18
+comptime TIMESTAMP: UInt8 = 18
 
 # Time as signed 32-bit integer, representing either seconds or
 # milliseconds since midnight
-comptime TIME32 = 19
+comptime TIME32: UInt8 = 19
 
 # Time as signed 64-bit integer, representing either microseconds or
 # nanoseconds since midnight
-comptime TIME64 = 20
+comptime TIME64: UInt8 = 20
 
 # YEAR_MONTH interval in SQL style
-comptime INTERVAL_MONTHS = 21
+comptime INTERVAL_MONTHS: UInt8 = 21
 
 # DAY_TIME interval in SQL style
-comptime INTERVAL_DAY_TIME = 22
+comptime INTERVAL_DAY_TIME: UInt8 = 22
 
 # Precision- and scale-based decimal type with 128 bits.
-comptime DECIMAL128 = 23
+comptime DECIMAL128: UInt8 = 23
 
 # Defined for backward-compatibility.
-comptime DECIMAL = DECIMAL128
+comptime DECIMAL: UInt8 = DECIMAL128
 
 # Precision- and scale-based decimal type with 256 bits.
-comptime DECIMAL256 = 24
+comptime DECIMAL256: UInt8 = 24
 
 # A list of some logical data type
-comptime LIST = 25
+comptime LIST: UInt8 = 25
 
 # Struct of logical types
-comptime STRUCT = 26
+comptime STRUCT: UInt8 = 26
 
 # Sparse unions of logical types
-comptime SPARSE_UNION = 27
+comptime SPARSE_UNION: UInt8 = 27
 
 # Dense unions of logical types
-comptime DENSE_UNION = 28
+comptime DENSE_UNION: UInt8 = 28
 
 # Dictionary-encoded type, also called "categorical" or "factor"
 # in other programming languages. Holds the dictionary value
 # type but not the dictionary itself, which is part of the
 # ArrayData struct
-comptime DICTIONARY = 29
+comptime DICTIONARY: UInt8 = 29
 
 # Map, a repeated struct logical type
-comptime MAP = 30
+comptime MAP: UInt8 = 30
 
 # Custom data type, implemented by user
-comptime EXTENSION = 31
+comptime EXTENSION: UInt8 = 31
 
 # Fixed size list of some logical type
-comptime FIXED_SIZE_LIST = 32
+comptime FIXED_SIZE_LIST: UInt8 = 32
 
 # Measure of elapsed time in either seconds, milliseconds, microseconds
 # or nanoseconds.
-comptime DURATION = 33
+comptime DURATION: UInt8 = 33
 
 # Like STRING, but with 64-bit offsets
-comptime LARGE_STRING = 34
+comptime LARGE_STRING: UInt8 = 34
 
 # Like BINARY, but with 64-bit offsets
-comptime LARGE_BINARY = 35
+comptime LARGE_BINARY: UInt8 = 35
 
 # Like LIST, but with 64-bit offsets
-comptime LARGE_LIST = 36
+comptime LARGE_LIST: UInt8 = 36
 
 # Calendar interval type with three fields.
-comptime INTERVAL_MONTH_DAY_NANO = 37
+comptime INTERVAL_MONTH_DAY_NANO: UInt8 = 37
 
 # Run-end encoded data.
-comptime RUN_END_ENCODED = 38
+comptime RUN_END_ENCODED: UInt8 = 38
 
 # String (UTF8) view type with 4-byte prefix and inline small string
 # optimization
-comptime STRING_VIEW = 39
+comptime STRING_VIEW: UInt8 = 39
 
 # Bytes view type with 4-byte prefix and inline small string optimization
-comptime BINARY_VIEW = 40
+comptime BINARY_VIEW: UInt8 = 40
 
 # A list of some logical data type represented by offset and size.
-comptime LIST_VIEW = 41
+comptime LIST_VIEW: UInt8 = 41
 
 # Like LIST_VIEW, but with 64-bit offsets and sizes
-comptime LARGE_LIST_VIEW = 42
+comptime LARGE_LIST_VIEW: UInt8 = 42
 
 
 struct Field(Copyable, Equatable, Representable, Stringable, Writable):
@@ -335,32 +335,33 @@ struct DataType(Copyable, Equatable, Representable, Stringable, Writable):
 
     @always_inline
     fn is_integer(self) -> Bool:
-        # TODO(kszucs): cannot use the following because ListLiteral.__contains__ is not implemented
-        # return self.code in [INT8, INT16, INT32, INT64, UINT8, UINT16, UINT32, UINT64]
-        # return self.is_signed_integer() or self.is_unsigned_integer()
-        return self.is_signed_integer() or self.is_unsigned_integer()
+        return self.code in [
+            INT8,
+            INT16,
+            INT32,
+            INT64,
+            UINT8,
+            UINT16,
+            UINT32,
+            UINT64,
+        ]
 
     @always_inline
     fn is_signed_integer(self) -> Bool:
-        return (
-            self.code == INT8
-            or self.code == INT16
-            or self.code == INT32
-            or self.code == INT64
-        )
+        return self.code in [INT8, INT16, INT32, INT64]
 
     @always_inline
     fn is_unsigned_integer(self) -> Bool:
-        return (
-            self.code == UINT8
-            or self.code == UINT16
-            or self.code == UINT32
-            or self.code == UINT64
-        )
+        return self.code in [
+            UINT8,
+            UINT16,
+            UINT32,
+            UINT64,
+        ]
 
     @always_inline
     fn is_floating_point(self) -> Bool:
-        return self.code == FLOAT32 or self.code == FLOAT64
+        return self.code in [FLOAT32, FLOAT64]
 
     @always_inline
     fn is_numeric(self) -> Bool:
