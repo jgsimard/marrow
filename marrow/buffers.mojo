@@ -1,9 +1,6 @@
 from memory import (
-    UnsafePointer,
     memset_zero,
     memcpy,
-    ArcPointer,
-    Span,
     memset,
 )
 from sys.info import simd_byte_width
@@ -53,25 +50,16 @@ struct Buffer(Movable):
 
     fn swap(mut self, mut other: Self):
         """Swap the content of this buffer with another buffer."""
-
-        var tmp_ptr = self.ptr
-        var tmp_size = self.size
-        var tmp_owns = self.owns
-        var tmp_offset = self.offset
-        self.ptr = other.ptr
-        self.size = other.size
-        self.owns = other.owns
-        self.offset = other.offset
-        other.ptr = tmp_ptr
-        other.size = tmp_size
-        other.owns = tmp_owns
-        other.offset = tmp_offset
+        swap(self.ptr, other.ptr)
+        swap(self.size, other.size)
+        swap(self.owns, other.owns)
+        swap(self.offset, other.offset)
 
     @staticmethod
     fn alloc[I: Intable, //, T: DType = DType.uint8](length: I) -> Buffer:
         var size = _required_bytes(Int(length), T)
         var ptr = alloc[UInt8](size, alignment=64)
-        memset_zero(ptr.bitcast[UInt8](), size)
+        memset_zero(ptr, size)
         return Buffer(ptr, size)
 
     @staticmethod
@@ -97,7 +85,7 @@ struct Buffer(Movable):
 
     @always_inline
     fn get_ptr_at(self, index: Int) -> UnsafePointer[UInt8, MutAnyOrigin]:
-        return (self.ptr + index).bitcast[UInt8]()
+        return self.ptr + index
 
     fn grow[I: Intable, //, T: DType = DType.uint8](mut self, target_length: I):
         if self.length[T]() >= Int(target_length):
@@ -105,8 +93,8 @@ struct Buffer(Movable):
 
         var new = Buffer.alloc[T](target_length)
         memcpy(
-            dest=new.ptr.bitcast[UInt8](),
-            src=self.ptr.bitcast[UInt8](),
+            dest=new.ptr,
+            src=self.ptr,
             count=self.size,
         )
         self.swap(new)

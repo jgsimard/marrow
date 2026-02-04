@@ -1,3 +1,4 @@
+from memory import ArcPointer
 from .primitive import *
 from ..buffers import Buffer, Bitmap
 

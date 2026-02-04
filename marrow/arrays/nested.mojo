@@ -146,8 +146,8 @@ struct StructArray(Array):
             dtype=struct_dtype^,
             length=0,
             bitmap=ArcPointer(bitmap^),
-            buffers=List[ArcPointer[Buffer]](),
-            children=List[ArcPointer[ArrayData]](),
+            buffers=[],
+            children=[],
             offset=0,
         )
 

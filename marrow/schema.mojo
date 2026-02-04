@@ -4,8 +4,6 @@
 """
 from .dtypes import Field
 from .c_data import CArrowSchema
-from collections import Dict
-from collections.string import StringSlice
 
 
 struct Schema(Copyable):
@@ -15,8 +13,8 @@ struct Schema(Copyable):
     fn __init__(
         out self,
         *,
-        var fields: List[Field] = List[Field](),
-        var metadata: Dict[String, String] = Dict[String, String](),
+        var fields: List[Field] = [],
+        var metadata: Dict[String, String] = {},
     ):
         """Initializes a schema with the given fields, if provided."""
         self.fields = fields^
@@ -39,16 +37,13 @@ struct Schema(Copyable):
 
     fn names(self) -> List[String]:
         """Returns the names of the fields in the schema."""
-        var names = List[String]()
-        for field in self.fields:
-            names.append(field.name)
-        return names^
+        return [field.name for field in self.fields]
 
     fn field(
         self,
         *,
         index: Optional[Int] = None,
-        name: Optional[StringSlice[mut=False, origin=ImmutAnyOrigin]] = None,
+        name: Optional[StringSlice[origin=ImmutAnyOrigin]] = None,
     ) raises -> ref [self.fields] Field:
         """Returns the field at the given index or with the given name."""
         if index and name:
@@ -58,8 +53,6 @@ struct Schema(Copyable):
         if not name:
             raise Error("Either an index or a name must be provided.")
         for field in self.fields:
-            if field.name.as_string_slice() == name.value():
+            if StringSlice(field.name) == name.value():
                 return field
-        raise Error(
-            StringSlice("Field with name `{}` not found.").format(name.value())
-        )
+        raise Error("Field with name `{}` not found.".format(name.value()))
